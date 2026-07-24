@@ -66,11 +66,7 @@ def sp(id, preset, x, y, cx, cy, color, alpha, rot=0,
         f_xml = (f'<a:solidFill><a:srgbClr val="{color}">'
                  f'<a:alpha val="{alpha}"/></a:srgbClr></a:solidFill>')
         l_xml = '<a:ln><a:noFill/></a:ln>'
-    g_xml = ''
-    if glow:
-        g_xml = (f'<a:effectLst><a:glow rad="{glow}">'
-                 f'<a:srgbClr val="{color}"><a:alpha val="{glow_a}"/></a:srgbClr>'
-                 f'</a:glow></a:effectLst>')
+    g_xml = ''  # glow effects removed — not supported on iOS PowerPoint
     return (f'<p:sp><p:nvSpPr><p:cNvPr id="{id}" name="d{id}"/>'
             f'<p:cNvSpPr/><p:nvPr/></p:nvSpPr>'
             f'<p:spPr><a:xfrm{rs}>'
@@ -526,12 +522,12 @@ DECOR_FN = {
 TRANSITIONS = {
     1: ('<p:zoom dir="in"/>',                    'med'),
     2: ('<p:push dir="u"/>',                     'fast'),
-    3: ('<p:strips dir="lu"/>',                  'med'),
+    3: ('<p:wipe dir="l"/>',                     'med'),
     4: ('<p:wheel spokes="8"/>',                 'fast'),
     5: ('<p:split dir="vert" orient="out"/>',    'med'),
-    6: ('<p:checker dir="horz"/>',               'fast'),
+    6: ('<p:blinds dir="vert"/>',                'fast'),
     7: ('<p:newsflash/>',                        'fast'),
-    8: ('<p:diamond/>',                          'med'),
+    8: ('<p:circle/>',                           'med'),
     9: ('<p:zoom dir="out"/>',                   'slow'),
 }
 

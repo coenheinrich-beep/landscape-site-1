@@ -4,6 +4,7 @@ Built on the EXACT code that opened on iOS (test_anims.py):
 - same sp() function, same make_timing(), same injection point
 - same safe transitions + fade animations
 - enhanced decor_per_slide() with per-slide themes but proven-safe patterns
+- color patches: rank colors, invisible text fixes, scouting bar colors
 """
 import zipfile, shutil, re, os
 from pathlib import Path
@@ -48,7 +49,7 @@ def decor(slide, c1, c2, c3):
             s.append(sp(n,'ellipse',int(W*i/6+W//12),int(H*0.87),140000,140000,c1,10000)); n+=1
         s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,12000)); n+=1
         s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,c2,12000)); n+=1
-    elif slide == 2:  # Ranks — rings + accent bars + diamonds
+    elif slide == 2:  # Ranks — rings + gold bars + diamonds
         s.append(sp(n,'ellipse',CX-500000,CY-500000,1000000,1000000,c1,8000,outline=True,lw=38100)); n+=1
         s.append(sp(n,'ellipse',CX-1000000,CY-1000000,2000000,2000000,'FFD700',5000,outline=True,lw=25400)); n+=1
         s.append(sp(n,'rect',0,0,W,H//10,'FFD700',8000)); n+=1
@@ -81,7 +82,7 @@ def decor(slide, c1, c2, c3):
             s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
         s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,12000)); n+=1
         s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'FF6D00',12000)); n+=1
-    elif slide == 5:  # Gameplay — speed bar rings + cyan dots
+    elif slide == 5:  # Quick Chat — speed bar rings + cyan dots
         s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'00BCD4',7000,outline=True,lw=38100)); n+=1
         s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,c2,4000,outline=True,lw=25400)); n+=1
         s.append(sp(n,'rect',0,0,W,H//8,'00BCD4',5000)); n+=1
@@ -208,9 +209,54 @@ def make_timing(shape_ids, f1, f2, delay_step, start_delay, anim_dur):
         f'</p:timing>'
     )
 
+def recolor_shape(xml, shape_id, new_color):
+    """Replace all srgbClr values within a specific shape (targeted by cNvPr id)."""
+    idx = xml.find(f'cNvPr id="{shape_id}"')
+    if idx < 0:
+        return xml
+    start = xml.rfind('<p:sp>', 0, idx)
+    end = xml.find('</p:sp>', idx) + 7
+    shape = xml[start:end]
+    shape_new = re.sub(r'<a:srgbClr val="[0-9A-Fa-f]{6}"',
+                       f'<a:srgbClr val="{new_color}"', shape)
+    return xml[:start] + shape_new + xml[end:]
+
+def patch_slide_colors(slide_num, xml):
+    """Apply targeted color improvements — fixes invisible text + color-codes content."""
+    if slide_num == 2:
+        # Color-code Rocket League ranks (slide 2 = rank explanation slide)
+        xml = recolor_shape(xml, 5,  'FFD700')  # SSL/GC → gold
+        xml = recolor_shape(xml, 7,  '4FC3F7')  # Champion → sky blue
+        xml = recolor_shape(xml, 9,  '00E5FF')  # Diamond → bright cyan
+        xml = recolor_shape(xml, 11, 'CE93D8')  # Platinum → lavender
+        xml = recolor_shape(xml, 13, 'FFC107')  # Gold → amber
+        xml = recolor_shape(xml, 15, '90A4AE')  # Silver → silver-gray
+        xml = recolor_shape(xml, 17, 'FF3D00')  # Bronze/BRYTON → red-orange (WAS INVISIBLE 0D1117)
+
+    elif slide_num == 5:
+        # Fix invisible "WHAT HE MEANS" column header (was 0D1117 = invisible on dark bg)
+        xml = recolor_shape(xml, 5, '00BCD4')   # WHAT HE TYPES → cyan
+        xml = recolor_shape(xml, 7, 'FF6D00')   # WHAT HE MEANS → orange (WAS INVISIBLE)
+
+    elif slide_num == 8:
+        # Color scouting report bars: red = embarrassingly bad, gold = ironically great
+        xml = recolor_shape(xml, 9,  'FF1744')  # Accuracy 8% bar → red
+        xml = recolor_shape(xml, 13, 'FF1744')  # Ball Chasing 99% bar → red
+        xml = recolor_shape(xml, 17, 'FF1744')  # Rotation 5% bar → red
+        xml = recolor_shape(xml, 21, 'FF1744')  # Toxicity 92% bar → red
+        xml = recolor_shape(xml, 25, 'FF1744')  # Blaming Teammates 97% bar → red
+        xml = recolor_shape(xml, 29, 'FF1744')  # Actual Skill 3% bar → red
+        xml = recolor_shape(xml, 33, 'FFD700')  # Heart & Passion 100% bar → gold
+
+    return xml
+
 for n in range(1, 10):
     p = WORK / f'ppt/slides/slide{n}.xml'
     xml = p.read_text(encoding='utf-8')
+
+    # Apply color patches before adding decorations
+    xml = patch_slide_colors(n, xml)
+
     c1, c2, c3 = SLIDE_COLORS[n]
     xml = xml.replace('</p:grpSpPr>', f'</p:grpSpPr>{decor(n, c1, c2, c3)}', 1)
     shape_ids = get_shape_ids(xml)

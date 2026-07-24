@@ -33,119 +33,30 @@ def sp(id, preset, x, y, cx, cy, color, alpha, rot=0, outline=False, lw=25400):
             f'</a:xfrm><a:prstGeom prst="{preset}"><a:avLst/></a:prstGeom>'
             f'{f_xml}{l_xml}</p:spPr></p:sp>')
 
-# Per-slide decorations — every shape uses sp() directly with literal coords (no helpers)
-# All coords manually verified >= 0, all IDs sequential from 500
+# EXACT decor_simple() from test_anims.py (the confirmed-working full-deck test).
+# Every slide gets the IDENTICAL 18-shape structure — only fill colors vary,
+# which is exactly what the confirmed-working file did.
 def decor(slide, c1, c2, c3):
     s = []; n = 500
-    if slide == 1:  # Title — large rings + corner dots + bars
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,c1,6000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,c2,4000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'ellipse',CX-2000000,CY-2000000,4000000,4000000,c3,2000,outline=True,lw=15000)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,c1,5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c2,5000)); n+=1
-        for i in range(6):
-            s.append(sp(n,'ellipse',int(W*i/6),int(H*0.08),180000,180000,c3,10000)); n+=1
-        for i in range(6):
-            s.append(sp(n,'ellipse',int(W*i/6+W//12),int(H*0.87),140000,140000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,12000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,c2,12000)); n+=1
-    elif slide == 2:  # Ranks — rings + gold bars + diamonds
-        s.append(sp(n,'ellipse',CX-500000,CY-500000,1000000,1000000,c1,8000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1000000,CY-1000000,2000000,2000000,'FFD700',5000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//10,'FFD700',8000)); n+=1
-        s.append(sp(n,'rect',0,H-H//10,W,H//10,c2,8000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'FFD700',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),160000,160000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-350000,15000,700000,350000,'FFD700',15000)); n+=1
-        s.append(sp(n,'diamond',CX-350000,H-365000,700000,350000,c1,15000)); n+=1
-    elif slide == 3:  # Stats — corner brackets + central ring
-        s.append(sp(n,'ellipse',CX-700000,CY-700000,1400000,1400000,c1,6000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1300000,CY-1300000,2600000,2600000,c2,3000,outline=True,lw=20000)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,c1,5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,5000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,c2,8000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,8000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,c2,10000)); n+=1
-    elif slide == 4:  # Quick Chat — wider rings + colored dots
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'FF6D00',7000,outline=True,lw=40000)); n+=1
-        s.append(sp(n,'ellipse',CX-1100000,CY-1100000,2200000,2200000,c2,4000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'FF6D00',6000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,6000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'FF6D00',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,12000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'FF6D00',12000)); n+=1
-    elif slide == 5:  # Quick Chat — speed bar rings + cyan dots
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'00BCD4',7000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,c2,4000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'00BCD4',5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,5000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'00BCD4',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'00BCD4',10000)); n+=1
-    elif slide == 6:  # Stages — purple + blue theme
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'9C27B0',6000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1100000,CY-1100000,2200000,2200000,c2,3000,outline=True,lw=20000)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'9C27B0',5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,5000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'9C27B0',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'9C27B0',10000)); n+=1
-    elif slide == 7:  # Scouting — green accent rings
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'00E676',7000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,c2,4000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'00E676',5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,5000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'00E676',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'00E676',10000)); n+=1
-    elif slide == 8:  # Roast/Fails — red accent rings
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'FF1744',7000,outline=True,lw=38100)); n+=1
-        s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,c2,4000,outline=True,lw=25400)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'FF1744',5000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,c3,5000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,'FF1744',10000)); n+=1
-        for i in range(5):
-            s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
-        s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,'FF1744',10000)); n+=1
-    else:  # slide 9 — gold celebration rings + diamonds
-        s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,'FFD700',8000,outline=True,lw=40000)); n+=1
-        s.append(sp(n,'ellipse',CX-1200000,CY-1200000,2400000,2400000,'FFD700',5000,outline=True,lw=28000)); n+=1
-        s.append(sp(n,'ellipse',CX-1800000,CY-1800000,3600000,3600000,'FFD700',3000,outline=True,lw=18000)); n+=1
-        s.append(sp(n,'rect',0,0,W,H//8,'FFD700',8000)); n+=1
-        s.append(sp(n,'rect',0,H-H//8,W,H//8,'FF6D00',8000)); n+=1
-        for i in range(6):
-            s.append(sp(n,'ellipse',int(W*i/6),int(H*0.08),200000,200000,'FFD700',12000)); n+=1
-        for i in range(6):
-            s.append(sp(n,'ellipse',int(W*i/6+W//12),int(H*0.87),160000,160000,'FF6D00',12000)); n+=1
-        s.append(sp(n,'diamond',CX-350000,10000,700000,350000,'FFD700',18000)); n+=1
-        s.append(sp(n,'diamond',CX-350000,H-360000,700000,350000,'FFD700',18000)); n+=1
+    s.append(sp(n,'ellipse',CX-600000,CY-600000,1200000,1200000,c1,6000,outline=True,lw=38100)); n+=1
+    s.append(sp(n,'ellipse',CX-900000,CY-900000,1800000,1800000,c2,4000,outline=True,lw=25400)); n+=1
+    s.append(sp(n,'rect',0,0,W,H//8,c1,5000)); n+=1
+    s.append(sp(n,'rect',0,H-H//8,W,H//8,c2,5000)); n+=1
+    for i in range(5):
+        s.append(sp(n,'ellipse',int(W*i/5),int(H*0.1),200000,200000,c3,8000)); n+=1
+    for i in range(5):
+        s.append(sp(n,'ellipse',int(W*i/5+W//10),int(H*0.85),150000,150000,c1,8000)); n+=1
+    s.append(sp(n,'diamond',CX-300000,10000,600000,300000,c3,10000)); n+=1
+    s.append(sp(n,'diamond',CX-300000,H-310000,600000,300000,c2,10000)); n+=1
     return ''.join(s)
 
+# EXACT SLIDE_COLORS rotation from test_anims.py (confirmed working)
 SLIDE_COLORS = {
-    1:('FF6D00','2196F3','00BCD4'), 2:('FFD700','2196F3','9C27B0'),
-    3:('FF6D00','2196F3','00BCD4'), 4:('00BCD4','FF6D00','9C27B0'),
-    5:('2196F3','FF6D00','00BCD4'), 6:('2196F3','FF6D00','00E676'),
-    7:('FF6D00','2196F3','00BCD4'), 8:('FF6D00','00BCD4','2196F3'),
-    9:('FFD700','FF6D00','00BCD4'),
+    1:('FF6D00','2196F3','00BCD4'), 2:('2196F3','00BCD4','FF6D00'),
+    3:('00BCD4','FF6D00','2196F3'), 4:('FF6D00','00BCD4','2196F3'),
+    5:('2196F3','FF6D00','00BCD4'), 6:('00BCD4','2196F3','FF6D00'),
+    7:('FF6D00','2196F3','00BCD4'), 8:('2196F3','00BCD4','FF6D00'),
+    9:('00BCD4','FF6D00','2196F3'),
 }
 # EXACT same safe transitions from test_anims.py
 TRANSITIONS = {

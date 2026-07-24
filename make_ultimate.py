@@ -74,442 +74,187 @@ def sp(id, preset, x, y, cx, cy, color, alpha, rot=0,
             f'</a:xfrm><a:prstGeom prst="{preset}"><a:avLst/></a:prstGeom>'
             f'{f_xml}{l_xml}{g_xml}</p:spPr></p:sp>')
 
-def dot(id, x, y, size, color, alpha):
-    return sp(id,'ellipse', x-size//2, y-size//2, size, size, color, alpha)
-
-def ring(id, x, y, size, color, alpha, lw=30000, glow_rad=150000):
-    return sp(id,'ellipse', x-size//2, y-size//2, size, size, color, alpha,
-              outline=True, lw=lw, glow=glow_rad, glow_a=min(80000,alpha+30000))
-
-def hex_ring(id, x, y, size, color, alpha, glow_rad=200000):
-    return sp(id,'hexagon', x-size//2, y-size//2, size, size, color, alpha,
-              outline=True, lw=25400, glow=glow_rad, glow_a=min(80000,alpha+20000))
-
+# Only ellipse, rect, diamond — confirmed safe on iOS PowerPoint
 def orb(id, x, y, size, color, alpha):
     return sp(id,'ellipse', x-size//2, y-size//2, size, size, color, alpha)
-
-def slash(id, cx, cy, length, color, alpha, angle_deg=15):
-    rot = angle_deg * 60000
-    thick = 18000  # ~0.02 inch thin line
-    return sp(id,'rect', cx-length//2, cy-thick//2, length, thick, color, alpha, rot=rot)
-
-def star(id, x, y, size, color, alpha, pts=4):
-    preset = f'star{pts}'
-    return sp(id, preset, x-size//2, y-size//2, size, size, color, alpha,
-              glow=size//3, glow_a=min(80000,alpha+20000))
-
-def half_frame(id, x, y, size, color, alpha, rot=0):
-    return sp(id,'halfFrame', x, y, size, size, color, alpha, rot=rot,
-              outline=True, lw=38100)
+def ring(id, x, y, size, color, alpha, lw=30000):
+    return sp(id,'ellipse', x-size//2, y-size//2, size, size, color, alpha, outline=True, lw=lw)
+def dot(id, x, y, size, color, alpha):
+    return sp(id,'ellipse', x-size//2, y-size//2, size, size, color, alpha)
+def bar(id, x, y, w2, h2, color, alpha):
+    return sp(id,'rect', x, y, w2, h2, color, alpha)
+def dmd(id, x, y, size, color, alpha):
+    return sp(id,'diamond', x-size//2, y-size//2, size, size, color, alpha)
 
 # ── PER-SLIDE DECORATIONS ────────────────────────────────────────────────────
-# ID strategy: decorative shapes use 500+ to never conflict with existing shapes
-
 def slide1_decor():
-    """Title slide: glow orbs, neon ring, speed slashes, sparkles"""
     s=[]; n=500
-    # Atmosphere orbs
-    s+=[ orb(n,   W-I,    I,    3*I, '2196F3', 6000), # blue top-right
-         orb(n+1, 0,      H,    4*I, 'FF6D00', 5000), # orange bottom-left
-         orb(n+2, CX,     CY,   5*I, '00BCD4', 3000), # cyan center
-         orb(n+3, W//4,   I,    2*I, '9C27B0', 5000)] # purple top-left
-    n+=4
-    # Large neon ring behind title
-    s+=[ ring(n,   CX, CY-I//2, 7*I, 'FF6D00', 12000, lw=20000, glow_rad=300000),
-         ring(n+1, CX, CY-I//2, 5*I, '00BCD4', 8000,  lw=15000, glow_rad=200000)]
+    # Big atmosphere orbs
+    s+=[orb(n,W-I,0,4*I,'2196F3',5000),orb(n+1,0,H,4*I,'FF6D00',5000),
+        orb(n+2,CX,CY,6*I,'00BCD4',3000),orb(n+3,W//4,0,2*I,'9C27B0',4000)]; n+=4
+    # Concentric rings behind title
+    for i,sz in enumerate([8*I,6*I,4*I]):
+        s.append(ring(n+i,CX,CY-I//2,sz,'FF6D00',5000+i*2000,lw=15000+i*5000)); n+=1
     n+=2
-    # Hexagon grid
-    s+=[ hex_ring(n,   I,      I//2,    2*I,   '2196F3', 10000),
-         hex_ring(n+1, W-I,    H-I,     2*I,   'FF6D00', 10000),
-         hex_ring(n+2, W//4,   H*3//4,  I,     '00BCD4', 8000),
-         hex_ring(n+3, W*3//4, I//2,    I,     'FF6D00', 8000)]
-    n+=4
-    # Speed slash lines across slide
-    for i,(cy2,angle,color,a) in enumerate([
-        (I,      12, 'FFFFFF', 8000),
-        (I*3//2, 12, '00BCD4', 10000),
-        (H-I,   -12, 'FF6D00', 8000),
-        (H*3//4,-12, 'FFFFFF', 6000),
-    ]):
-        s.append(slash(n+i, CX, cy2, 8*I, color, a, angle))
-    n+=4
-    # Star sparkles
-    for i,(x2,y2,sz,c) in enumerate([
-        (I//2, H//2, I//2, 'FF6D00'),
-        (W-I//2, H//3, I//3, '00BCD4'),
-        (W//4, H*3//4, I//3, 'FFFFFF'),
-        (W*3//4, H//4, I//2, 'FF6D00'),
-    ]):
-        s.append(star(n+i, x2, y2, sz, c, 20000, pts=4))
-    n+=4
+    # Top/bottom accent bars
+    s+=[bar(n,0,0,W,I//4,'FF6D00',15000),bar(n+1,0,H-I//4,W,I//4,'00BCD4',15000)]; n+=2
+    # Left/right edge bars
+    s+=[bar(n,0,0,I//4,H,'2196F3',8000),bar(n+1,W-I//4,0,I//4,H,'2196F3',8000)]; n+=2
+    # Speed lines (thin horizontal bars)
+    for i,y2 in enumerate([I,I*3//2,H-I,H*3//4]):
+        s.append(bar(n+i,0,y2,W,12000,'FFFFFF',4000+i*1000)); n+=1
+    n+=3
+    # Diamond sparkles
+    for i,(x2,y2,sz,c) in enumerate([(I//2,H//2,I//3,'FF6D00'),(W-I//2,H//3,I//4,'00BCD4'),(W//4,H*3//4,I//4,'FFFFFF'),(W*3//4,H//4,I//3,'FF6D00')]):
+        s.append(dmd(n+i,x2,y2,sz,c,20000)); n+=1
+    n+=3
     # Particles
-    pts=[(I//2,I//2,'FF6D00',80000),(2*I,I//3,'00BCD4',70000),
-         (4*I,I//4,'FFFFFF',50000),(7*I,I//2,'2196F3',80000),
-         (I//4,2*I,'00BCD4',60000),(8*I,2*I,'FF6D00',70000),
-         (I//2,4*I,'FFFFFF',50000),(5*I,H-I//4,'2196F3',70000),
-         (W-I//4,H//2,'00BCD4',60000),(3*I,H-I//3,'FF6D00',60000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 60000+i*6000, c, a))
+    for i,(x2,y2,c,a) in enumerate([(I//2,I//2,'FF6D00',60000),(2*I,I//3,'00BCD4',50000),(4*I,I//4,'FFFFFF',40000),(7*I,I//2,'2196F3',60000),(I//4,2*I,'00BCD4',50000),(8*I,2*I,'FF6D00',55000),(5*I,H-I//4,'2196F3',50000),(W-I//4,H//2,'00BCD4',50000),(3*I,H-I//3,'FF6D00',55000)]):
+        s.append(dot(n+i,x2,y2,55000+i*5000,c,a)); n+=1
     return ''.join(s)
 
 def slide2_decor():
-    """Ranks: rank-tier colored orbs, hexagons"""
     s=[]; n=520
-    # Rank color aura orbs (bronze to SSL)
-    rank_colors = ['CD7F32','C0C0C0','FFD700','00BFFF','9C27B0','FF6D00']
+    rank_colors=['CD7F32','C0C0C0','FFD700','00BFFF','9C27B0','FF6D00']
     for i,c in enumerate(rank_colors):
-        y2 = I//2 + i*(H//6)
-        s.append(orb(n+i, I, y2, I, c, 8000))
-    n+=6
-    # Background atmosphere
-    s+=[ orb(n,   W-2*I, I,   3*I, 'FFD700', 5000),
-         orb(n+1, W//2,  H,   4*I, '9C27B0', 4000),
-         orb(n+2, 0,     H//2, 3*I,'2196F3', 4000)]
-    n+=3
-    # Hex rings
-    s+=[ hex_ring(n,   W*3//4, H//4, 2*I, 'FFD700', 10000),
-         hex_ring(n+1, W//4,  H*3//4,2*I, '2196F3', 8000),
-         hex_ring(n+2, CX, CY, 4*I, 'FF6D00', 6000)]
-    n+=3
-    # Stars at top/bottom
-    s+=[ star(n,   W-I//2, I//2,  I//2, 'FFD700', 25000, 5),
-         star(n+1, W-I,    H-I//2,I//3, 'FFD700', 20000, 6),
-         star(n+2, I//2,   H-I//2,I//3, '9C27B0', 15000, 4)]
-    n+=3
-    # Slash lines
-    s+=[ slash(n,   CX, I,   7*I, '00BCD4', 6000, 10),
-         slash(n+1, CX, H-I, 7*I, 'FF6D00', 6000,-10)]
+        s.append(orb(n+i,I,I//2+i*(H//6),I,c,8000)); n+=1
+    s+=[orb(n,W-2*I,0,3*I,'FFD700',5000),orb(n+1,W//2,H,4*I,'9C27B0',4000),orb(n+2,0,H//2,3*I,'2196F3',4000)]; n+=3
+    for i,sz in enumerate([5*I,3*I,I]):
+        s.append(ring(n+i,W*3//4,CY,sz,'FFD700',5000+i*3000,lw=20000)); n+=1
     n+=2
-    # Particles
-    pts=[(2*I,I//3,'FFD700',80000),(5*I,I//4,'C0C0C0',70000),
-         (8*I,I//2,'FF6D00',80000),(I//4,H//2,'2196F3',60000),
-         (W-I//4,H*3//4,'9C27B0',70000),(4*I,H-I//4,'FFD700',60000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 70000, c, a))
+    s+=[bar(n,0,0,W,I//5,'FFD700',10000),bar(n+1,0,H-I//5,W,I//5,'FFD700',10000)]; n+=2
+    for i,(x2,y2,c) in enumerate([(W-I//2,I//2,'FFD700'),(W-I,H-I//2,'FFD700'),(I//2,H-I//2,'9C27B0')]):
+        s.append(dmd(n+i,x2,y2,I//2,c,20000)); n+=1
+    n+=2
+    for i,(x2,y2,c,a) in enumerate([(2*I,I//3,'FFD700',60000),(5*I,I//4,'C0C0C0',50000),(8*I,I//2,'FF6D00',60000),(I//4,H//2,'2196F3',50000),(W-I//4,H*3//4,'9C27B0',55000),(4*I,H-I//4,'FFD700',55000)]):
+        s.append(dot(n+i,x2,y2,70000,c,a)); n+=1
     return ''.join(s)
 
 def slide3_decor():
-    """Text/analysis slide: corner brackets, circuit vibes"""
     s=[]; n=540
-    # Corner halfFrames
-    for i,(x2,y2,rot) in enumerate([
-        (0,         0,         0),
-        (W-I,       0,         5400000),  # 90°
-        (0,         H-I,       16200000), # 270°
-        (W-I,       H-I,       10800000), # 180°
-    ]):
-        s.append(half_frame(n+i, x2, y2, I, '00BCD4', 15000, rot))
-    n+=4
-    # Atmosphere
-    s+=[ orb(n,   CX, CY, 6*I, '2196F3', 4000),
-         orb(n+1, W-I, 0,  3*I, 'FF6D00', 5000),
-         orb(n+2, 0,   H,  3*I, '00BCD4', 4000)]
-    n+=3
-    # Hexagons
-    s+=[ hex_ring(n,   I,       I,       2*I, '2196F3', 8000),
-         hex_ring(n+1, W-I,     H-I,     2*I, 'FF6D00', 8000),
-         hex_ring(n+2, CX+2*I,  CY-I,    I,   '00BCD4', 10000)]
-    n+=3
-    # Cross accent shapes
-    s+=[ sp(n,   'cross', CX-I//4, H*3//4-I//4, I//2, I//2, 'FF6D00', 8000),
-         sp(n+1, 'cross', W*3//4, I//4, I//3, I//3, '00BCD4', 8000)]
+    # Corner L-brackets from rects
+    for x2,y2 in [(0,0),(W-I,0),(0,H-I//4),(W-I,H-I//4)]:
+        s.append(bar(n,x2,y2,I,I//4,'00BCD4',15000)); n+=1
+    for x2,y2 in [(0,0),(W-I//4,0),(0,H-I),(W-I//4,H-I)]:
+        s.append(bar(n,x2,y2,I//4,I,'00BCD4',15000)); n+=1
+    s+=[orb(n,CX,CY,6*I,'2196F3',4000),orb(n+1,W-I,0,3*I,'FF6D00',5000),orb(n+2,0,H,3*I,'00BCD4',4000)]; n+=3
+    for i,sz in enumerate([4*I,2*I]):
+        s.append(ring(n+i,I,I,sz,'2196F3',6000+i*2000,lw=20000)); n+=1
+        s.append(ring(n+i+2,W-I,H-I,sz,'FF6D00',6000+i*2000,lw=20000)); n+=1
     n+=2
-    # Particles
-    pts=[(I//2,I//3,'2196F3',70000),(3*I,I//4,'00BCD4',60000),
-         (6*I,I//2,'FFFFFF',50000),(8*I,I//3,'FF6D00',60000),
-         (I//3,3*I,'00BCD4',60000),(W-I//3,2*I,'2196F3',60000),
-         (4*I,H-I//3,'FF6D00',70000),(7*I,H-I//2,'FFFFFF',50000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 60000+i*5000, c, a))
+    for i,(x2,y2,c,a) in enumerate([(I//2,I//3,'2196F3',60000),(3*I,I//4,'00BCD4',50000),(6*I,I//2,'FFFFFF',40000),(8*I,I//3,'FF6D00',50000),(I//3,3*I,'00BCD4',50000),(W-I//3,2*I,'2196F3',50000),(4*I,H-I//3,'FF6D00',55000),(7*I,H-I//2,'FFFFFF',40000)]):
+        s.append(dot(n+i,x2,y2,55000+i*4000,c,a)); n+=1
     return ''.join(s)
 
 def slide4_decor():
-    """Stats: HUD frames, diamond accents, orange power"""
     s=[]; n=560
-    # HUD corner frames
-    for i,(x2,y2,rot) in enumerate([
-        (0,       0,       0),
-        (W-2*I,   0,       5400000),
-        (0,       H-2*I,   16200000),
-        (W-2*I,   H-2*I,   10800000),
-    ]):
-        s.append(half_frame(n+i, x2, y2, 2*I, 'FF6D00', 18000, rot))
-    n+=4
-    # Diamond accents
-    for i,(x2,y2,c) in enumerate([
-        (I//2,   CY, 'FF6D00'), (W-I//2, CY, 'FF6D00'),
-        (CX,     I//2,'00BCD4'),(CX,     H-I//2,'00BCD4'),
-    ]):
-        s.append(sp(n+i,'diamond',x2-I//4,y2-I//4,I//2,I//2,c,15000))
-    n+=4
-    # Atmosphere
-    s+=[ orb(n,   0,   0,   4*I, 'FF6D00', 6000),
-         orb(n+1, W,   H,   4*I, 'FF6D00', 5000),
-         orb(n+2, CX,  CY,  3*I, '2196F3', 3000)]
-    n+=3
-    # Hex grid
-    s+=[ hex_ring(n,   I,      I,      2*I, 'FF6D00', 12000),
-         hex_ring(n+1, W-I,    H-I,    2*I, 'FF6D00', 12000),
-         hex_ring(n+2, CX,     CY,     5*I, 'FF6D00', 5000)]
-    n+=3
-    # Speed lines
-    s+=[ slash(n,   CX, I,   8*I, 'FF6D00', 8000, 8),
-         slash(n+1, CX, H-I, 8*I, 'FF6D00', 8000,-8)]
+    # HUD corner accents from pairs of rects
+    for x2,y2 in [(0,0),(W-2*I,0),(0,H-I//4),(W-2*I,H-I//4)]:
+        s.append(bar(n,x2,y2,2*I,I//4,'FF6D00',18000)); n+=1
+    for x2,y2 in [(0,0),(W-I//4,0),(0,H-2*I),(W-I//4,H-2*I)]:
+        s.append(bar(n,x2,y2,I//4,2*I,'FF6D00',18000)); n+=1
+    for i,(x2,y2,c) in enumerate([(I//2,CY,'FF6D00'),(W-I//2,CY,'FF6D00'),(CX,I//2,'00BCD4'),(CX,H-I//2,'00BCD4')]):
+        s.append(dmd(n+i,x2,y2,I//2,c,15000)); n+=1
+    s+=[orb(n,0,0,4*I,'FF6D00',6000),orb(n+1,W,H,4*I,'FF6D00',5000),orb(n+2,CX,CY,3*I,'2196F3',3000)]; n+=3
+    for i,sz in enumerate([6*I,4*I,2*I]):
+        s.append(ring(n+i,CX,CY,sz,'FF6D00',4000+i*2000,lw=15000)); n+=1
     n+=2
-    # Stars
-    for i,(x2,y2,sz) in enumerate([
-        (I//3,H//3,I//3),(W-I//3,H*2//3,I//3),(W//3,H-I//4,I//4)]):
-        s.append(star(n+i, x2, y2, sz, 'FF6D00', 20000, 4))
-    n+=3
-    # Particles
-    pts=[(I//2,I//4,'FF6D00',90000),(3*I,I//3,'FFFFFF',60000),
-         (6*I,I//4,'FF6D00',80000),(I//3,2*I,'00BCD4',60000),
-         (W-I//3,3*I,'FF6D00',70000),(5*I,H-I//4,'2196F3',60000),
-         (8*I,H-I//3,'FF6D00',80000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 65000+i*5000, c, a))
+    s+=[bar(n,0,CY-8000,W,16000,'FF6D00',5000),bar(n+1,CX-8000,0,16000,H,'FF6D00',5000)]; n+=2
+    for i,(x2,y2,c,a) in enumerate([(I//2,I//4,'FF6D00',70000),(3*I,I//3,'FFFFFF',50000),(6*I,I//4,'FF6D00',65000),(I//3,2*I,'00BCD4',50000),(W-I//3,3*I,'FF6D00',60000),(5*I,H-I//4,'2196F3',50000),(8*I,H-I//3,'FF6D00',65000)]):
+        s.append(dot(n+i,x2,y2,60000+i*4000,c,a)); n+=1
     return ''.join(s)
 
 def slide5_decor():
-    """Quick Chat: speech bubble vibes, two-column flair"""
     s=[]; n=580
-    # Large speech bubble circles (background)
-    s+=[ ring(n,   W//4,   CY, 3*I, '00BCD4', 7000, lw=20000, glow_rad=200000),
-         ring(n+1, W*3//4, CY, 3*I, 'FF6D00', 7000, lw=20000, glow_rad=200000)]
+    s+=[ring(n,W//4,CY,3*I,'00BCD4',7000,lw=20000),ring(n+1,W*3//4,CY,3*I,'FF6D00',7000,lw=20000)]; n+=2
+    s+=[orb(n,0,CY,4*I,'00BCD4',5000),orb(n+1,W,CY,4*I,'FF6D00',5000),orb(n+2,CX,0,3*I,'9C27B0',4000)]; n+=3
+    for i,sz in enumerate([5*I,3*I]):
+        s.append(ring(n+i,W//4,CY,sz,'00BCD4',3000+i*2000,lw=12000)); n+=1
+        s.append(ring(n+i+2,W*3//4,CY,sz,'FF6D00',3000+i*2000,lw=12000)); n+=1
     n+=2
-    # Large quote mark shapes (low opacity)
-    s+=[ sp(n,   'leftBrace', I//4, I//2, I, I*3//2, 'FFFFFF', 8000),
-         sp(n+1, 'rightBrace',W-I-I//4, I//2, I, I*3//2, 'FF6D00', 8000)]
+    for i in range(7):
+        y2=I//2+i*(H//7)
+        s.append(dot(n+i,CX,y2,35000,'FFFFFF',8000)); n+=1
+    s+=[bar(n,0,0,W,I//5,'9C27B0',8000),bar(n+1,0,H-I//5,W,I//5,'9C27B0',8000)]; n+=2
+    for i,(x2,y2,c) in enumerate([(I//2,I//2,'00BCD4'),(W-I//2,H-I//2,'FF6D00'),(CX,I//4,'FFFFFF')]):
+        s.append(dmd(n+i,x2,y2,I//3,c,20000)); n+=1
     n+=2
-    # Atmosphere
-    s+=[ orb(n,   0,  CY, 4*I, '00BCD4', 5000),
-         orb(n+1, W,  CY, 4*I, 'FF6D00', 5000),
-         orb(n+2, CX, 0,  3*I, '9C27B0', 4000)]
-    n+=3
-    # Hex rings
-    s+=[ hex_ring(n,   W//4,  CY,   4*I, '00BCD4', 7000),
-         hex_ring(n+1, W*3//4,CY,   4*I, 'FF6D00', 7000),
-         hex_ring(n+2, CX,    CY,   6*I, 'FFFFFF', 3000)]
-    n+=3
-    # Vertical center divider dots
-    for i in range(6):
-        y2 = I//2 + i*(H//6)
-        s.append(dot(n+i, CX, y2, 40000, 'FFFFFF', 10000))
-    n+=6
-    # Stars
-    s+=[ star(n,   I//2,     I//2,  I//3,'00BCD4', 20000,5),
-         star(n+1, W-I//2,   H-I//2,I//3,'FF6D00', 20000,5),
-         star(n+2, CX,       I//4,  I//4,'FFFFFF', 15000,4)]
-    n+=3
-    # Particles
-    pts=[(I//3,I//3,'00BCD4',80000),(W//4-I//2,I//4,'FFFFFF',60000),
-         (W*3//4+I//2,I//4,'FF6D00',70000),(W-I//3,I//3,'FF6D00',80000),
-         (I//4,H//2,'2196F3',60000),(W-I//4,H//3,'00BCD4',70000),
-         (W//4,H-I//3,'00BCD4',70000),(W*3//4,H-I//3,'FF6D00',70000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 60000, c, a))
+    for i,(x2,y2,c,a) in enumerate([(I//3,I//3,'00BCD4',65000),(W-I//3,I//3,'FF6D00',65000),(I//4,H//2,'2196F3',50000),(W-I//4,H//3,'00BCD4',55000),(W//4,H-I//3,'00BCD4',55000),(W*3//4,H-I//3,'FF6D00',55000)]):
+        s.append(dot(n+i,x2,y2,60000,c,a)); n+=1
     return ''.join(s)
 
 def slide6_decor():
-    """5 Stages: stage-number glows, progression arc"""
     s=[]; n=600
-    # 5 large stage glow circles — one for each stage area
     stage_colors=['2196F3','00BCD4','FF6D00','FF1744','00E676']
     for i,c in enumerate(stage_colors):
-        x2 = I//2 + i*(W//5)
-        s.append(orb(n+i, x2, CY, 2*I, c, 6000))
-    n+=5
-    # Big rings over stage areas
-    for i,c in enumerate(['2196F3','00BCD4','FF6D00','FF1744','00E676']):
-        x2 = I//2 + i*(W//5)
-        s.append(ring(n+i, x2, CY, I, c, 15000, lw=25400, glow_rad=150000))
-    n+=5
-    # Atmosphere
-    s+=[ orb(n,   0,  0,  4*I, '2196F3', 5000),
-         orb(n+1, W,  H,  4*I, '00E676', 5000),
-         orb(n+2, CX, CY, 6*I, 'FF6D00', 3000)]
-    n+=3
-    # Hex rings
-    s+=[ hex_ring(n,   I,     H//4,  2*I, '2196F3', 10000),
-         hex_ring(n+1, W-I,   H*3//4,2*I, '00E676', 10000),
-         hex_ring(n+2, CX,    I,     3*I, 'FF6D00', 7000)]
-    n+=3
-    # Stars
-    for i,(x2,y2,c) in enumerate([(I//3,I//3,'00E676'),(W-I//3,I//3,'2196F3'),
-                                   (CX,H-I//3,'FF6D00')]):
-        s.append(star(n+i, x2, y2, I//3, c, 20000, 5))
-    n+=3
-    # Slash lines
-    s+=[ slash(n,   CX, I//2, 8*I, '00BCD4', 6000, 5),
-         slash(n+1, CX, H-I//2,8*I,'FF6D00', 6000,-5)]
+        x2=I//2+i*(W//5)
+        s.append(orb(n+i,x2,CY,2*I,c,6000)); n+=1
+    for i,c in enumerate(stage_colors):
+        x2=I//2+i*(W//5)
+        s.append(ring(n+i,x2,CY,I,c,15000,lw=25000)); n+=1
+    s+=[orb(n,0,0,4*I,'2196F3',5000),orb(n+1,W,H,4*I,'00E676',5000),orb(n+2,CX,CY,6*I,'FF6D00',3000)]; n+=3
+    s+=[bar(n,0,0,W,I//5,'2196F3',8000),bar(n+1,0,H-I//5,W,I//5,'00E676',8000)]; n+=2
+    for i,(x2,y2,c) in enumerate([(I//3,I//3,'00E676'),(W-I//3,I//3,'2196F3'),(CX,H-I//3,'FF6D00')]):
+        s.append(dmd(n+i,x2,y2,I//3,c,20000)); n+=1
     n+=2
-    # Particles
-    pts=[(I//3,I//4,'2196F3',80000),(W//3,I//4,'00BCD4',70000),
-         (W*2//3,I//4,'FF6D00',80000),(W-I//3,I//4,'00E676',70000),
-         (I//4,H//2,'2196F3',60000),(W-I//4,H//2,'FF1744',60000),
-         (W//3,H-I//3,'00BCD4',70000),(W*2//3,H-I//3,'FF6D00',70000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i, x2, y2, 70000, c, a))
+    for i,(x2,y2,c,a) in enumerate([(I//3,I//4,'2196F3',65000),(W//3,I//4,'00BCD4',60000),(W*2//3,I//4,'FF6D00',65000),(W-I//3,I//4,'00E676',60000),(I//4,H//2,'2196F3',50000),(W-I//4,H//2,'FF1744',50000),(W//3,H-I//3,'00BCD4',55000),(W*2//3,H-I//3,'FF6D00',55000)]):
+        s.append(dot(n+i,x2,y2,65000,c,a)); n+=1
     return ''.join(s)
 
 def slide7_decor():
-    """Gameplay: speed lines everywhere, ball trajectory dots"""
     s=[]; n=620
-    # Heavy speed lines
-    for i,(cy2,angle,c,a) in enumerate([
-        (I,      18, 'FF6D00', 12000),
-        (I*3//2, 18, '00BCD4', 10000),
-        (I*5//2, 15, 'FFFFFF', 8000),
-        (H-I,   -18, 'FF6D00', 12000),
-        (H-I*2, -15, '00BCD4', 8000),
-        (CY,     20, '2196F3', 6000),
-    ]):
-        s.append(slash(n+i, CX, cy2, 9*I, c, a, angle))
-    n+=6
-    # Ball trajectory dots (arc-like)
-    for i in range(8):
-        t = i/7
-        x2 = int(I + t*(W-2*I))
-        y2 = int(CY - I*math.sin(math.pi*t)*2)
-        s.append(dot(n+i, x2, y2, 80000+i*10000, 'FF6D00', 15000+i*2000))
-    n+=8
-    # Atmosphere
-    s+=[ orb(n,   0,  CY, 5*I, 'FF6D00', 7000),
-         orb(n+1, W,  CY, 5*I, '2196F3', 6000),
-         orb(n+2, CX, CY, 4*I, 'FFFFFF', 2000)]
-    n+=3
-    # Hex rings
-    s+=[ hex_ring(n,   I,   I,   2*I, 'FF6D00', 12000),
-         hex_ring(n+1, W-I, H-I, 2*I, '2196F3', 12000),
-         hex_ring(n+2, CX,  CY,  6*I, 'FF6D00', 5000)]
-    n+=3
-    # Arrows
-    s+=[ sp(n,   'rightArrow', I,      CY-I//4, 3*I, I//2, 'FF6D00', 12000),
-         sp(n+1, 'leftArrow',  W-3*I,  CY-I//4, 3*I, I//2, '2196F3', 12000)]
+    # Speed lines
+    for i,y2 in enumerate([I,I*3//2,I*5//2,H-I,H-I*2,CY]):
+        c='FF6D00' if i%2==0 else '00BCD4'
+        s.append(bar(n+i,0,y2,W,14000,c,6000+i*1000)); n+=1
+    # Ball arc dots
+    for i in range(9):
+        t=i/8
+        x2=int(I+t*(W-2*I))
+        y2=int(CY-I*(4*t*(1-t))*1.5)  # parabola
+        s.append(dot(n+i,x2,y2,70000+i*8000,'FF6D00',12000+i*2000)); n+=1
+    s+=[orb(n,0,CY,5*I,'FF6D00',7000),orb(n+1,W,CY,5*I,'2196F3',6000),orb(n+2,CX,CY,4*I,'FFFFFF',2000)]; n+=3
+    for i,sz in enumerate([7*I,5*I,3*I]):
+        s.append(ring(n+i,CX,CY,sz,'FF6D00',3000+i*2000,lw=12000)); n+=1
     n+=2
-    # Stars
-    for i,(x2,y2,sz,c) in enumerate([(I//3,I//3,I//2,'FF6D00'),
-                                      (W-I//3,I//3,I//3,'00BCD4'),
-                                      (W-I//3,H-I//3,I//2,'FF6D00')]):
-        s.append(star(n+i,x2,y2,sz,c,25000,4))
-    n+=3
-    # Extra particles
-    pts=[(I//2,I//4,'FF6D00',90000),(3*I,I//3,'FFFFFF',70000),
-         (7*I,I//3,'2196F3',80000),(I//3,H//3,'00BCD4',70000),
-         (W-I//3,H*2//3,'FF6D00',80000),(5*I,H-I//4,'2196F3',70000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i,x2,y2,70000,c,a))
+    for i,(x2,y2,c,a) in enumerate([(I//2,I//4,'FF6D00',70000),(3*I,I//3,'FFFFFF',55000),(7*I,I//3,'2196F3',65000),(I//3,H//3,'00BCD4',55000),(W-I//3,H*2//3,'FF6D00',65000),(5*I,H-I//4,'2196F3',55000)]):
+        s.append(dot(n+i,x2,y2,65000,c,a)); n+=1
     return ''.join(s)
 
 def slide8_decor():
-    """Scouting Report: radar rings, HUD frames, tech grid"""
     s=[]; n=640
-    # Radar concentric rings
-    for i,sz in enumerate([6*I, 4*I, 2*I, I]):
-        a = 6000 + i*3000
-        s.append(ring(n+i, CX+2*I, CY, sz, 'FF6D00', a, lw=15000, glow_rad=100000))
-    n+=4
-    # Target crosshair lines (thin long rectangles)
-    s+=[ sp(n,   'rect', I,    CY-8000, W-2*I, 16000, 'FF6D00', 8000),  # horizontal
-         sp(n+1, 'rect', CX+2*I-8000, I, 16000, H-2*I,'FF6D00', 8000)]  # vertical
-    n+=2
-    # HUD corner frames
-    for i,(x2,y2,rot) in enumerate([
-        (0, 0, 0),(W-2*I, 0, 5400000),
-        (0, H-2*I, 16200000),(W-2*I, H-2*I, 10800000)]):
-        s.append(half_frame(n+i, x2, y2, 2*I, '00BCD4', 15000, rot))
-    n+=4
-    # Atmosphere
-    s+=[ orb(n,   CX+2*I,  CY,  5*I, 'FF6D00', 5000),
-         orb(n+1, 0,        0,   4*I, '2196F3', 5000),
-         orb(n+2, W,        H,   4*I, 'FF6D00', 4000)]
-    n+=3
-    # Hex rings
-    s+=[ hex_ring(n,   I,     I,     2*I, '00BCD4', 10000),
-         hex_ring(n+1, W-I,   H-I,   2*I, 'FF6D00', 10000)]
-    n+=2
-    # Diamond accents on stat labels side
+    for i,sz in enumerate([6*I,4*I,2*I,I]):
+        s.append(ring(n+i,CX+2*I,CY,sz,'FF6D00',5000+i*2500,lw=12000)); n+=1
+    s+=[bar(n,I,CY-8000,W-2*I,16000,'FF6D00',8000),bar(n+1,CX+2*I-8000,I,16000,H-2*I,'FF6D00',8000)]; n+=2
+    # Corner accents
+    for x2,y2 in [(0,0),(W-2*I,0),(0,H-I//4),(W-2*I,H-I//4)]:
+        s.append(bar(n,x2,y2,2*I,I//4,'00BCD4',15000)); n+=1
+    for x2,y2 in [(0,0),(W-I//4,0),(0,H-2*I),(W-I//4,H-2*I)]:
+        s.append(bar(n,x2,y2,I//4,2*I,'00BCD4',15000)); n+=1
+    s+=[orb(n,CX+2*I,CY,5*I,'FF6D00',5000),orb(n+1,0,0,4*I,'2196F3',5000),orb(n+2,W,H,4*I,'FF6D00',4000)]; n+=3
     for i in range(4):
-        y2 = I + i*(H//4)
-        s.append(sp(n+i,'diamond', I//4, y2, I//4, I//4, 'FF6D00', 12000))
-    n+=4
-    # Stars
+        s.append(dmd(n+i,I//4,I+i*(H//4),I//3,'FF6D00',12000)); n+=1
     for i,(x2,y2,c) in enumerate([(I//3,H-I//3,'FF6D00'),(W*3//4,I//3,'00BCD4')]):
-        s.append(star(n+i,x2,y2,I//3,c,20000,5))
-    n+=2
-    # Particles
-    pts=[(I//3,I//4,'00BCD4',80000),(3*I,I//3,'FF6D00',70000),
-         (8*I,I//3,'FFFFFF',60000),(I//3,3*I,'2196F3',70000),
-         (W-I//3,2*I,'FF6D00',80000),(5*I,H-I//4,'00BCD4',70000),
-         (7*I,H-I//3,'FF6D00',80000)]
-    for i,(x2,y2,c,a) in enumerate(pts):
-        s.append(dot(n+i,x2,y2,65000,c,a))
+        s.append(dmd(n+i,x2,y2,I//3,c,20000)); n+=1
+    n+=1
+    for i,(x2,y2,c,a) in enumerate([(I//3,I//4,'00BCD4',65000),(3*I,I//3,'FF6D00',55000),(8*I,I//3,'FFFFFF',50000),(I//3,3*I,'2196F3',55000),(W-I//3,2*I,'FF6D00',65000),(5*I,H-I//4,'00BCD4',55000),(7*I,H-I//3,'FF6D00',65000)]):
+        s.append(dot(n+i,x2,y2,60000,c,a)); n+=1
     return ''.join(s)
 
 def slide9_decor():
-    """Congrats: MAXIMUM celebration — confetti, burst, stars"""
     s=[]; n=660
-    # Burst rays from center-ish
-    burst_cx, burst_cy = CX, CY-I//2
-    for i in range(12):
-        angle = i * 30
-        rad = angle * 60000
-        s.append(sp(n+i,'rect', burst_cx-I*3//2, burst_cy-10000,
-                    3*I, 20000, 'FF6D00', 12000+i*1500, rot=rad))
-    n+=12
-    # More burst rays in cyan
-    for i in range(8):
-        angle = i*45 + 22
-        rad = angle * 60000
-        s.append(sp(n+i,'rect', burst_cx-I, burst_cy-8000,
-                    2*I, 16000, '00BCD4', 10000+i*1500, rot=rad))
-    n+=8
-    # Confetti scatter — many tiny colored rectangles
-    confetti=[
-        (I,    I//2,   'FF6D00',800000), (2*I, I//3,  '00BCD4',900000),
-        (3*I,  I//4,   'FFD700',800000), (4*I, I//2,  'FF1744',900000),
-        (5*I,  I//3,   '00E676',800000), (6*I, I//4,  '9C27B0',900000),
-        (7*I,  I//2,   'FF6D00',800000), (8*I, I//3,  '00BCD4',900000),
-        (I//2, H//3,   'FFD700',800000), (I//4, 2*I,  'FF1744',900000),
-        (W-I//2,H//3,  '00E676',800000), (W-I//4,2*I,'9C27B0',900000),
-        (2*I,  H*3//4, 'FF6D00',800000), (4*I, H*3//4,'FFD700',900000),
-        (6*I,  H*3//4, '00BCD4',800000), (8*I, H*3//4,'FF1744',900000),
-        (I//2, H-I//3, '00E676',800000), (W-I//2,H-I//3,'9C27B0',900000),
-        (3*I,  H-I//4, 'FF6D00',800000), (7*I, H-I//4,'00BCD4',900000),
-    ]
-    for i,(x2,y2,c,a) in enumerate(confetti):
-        rot = (i*37*60000) % 21600000
-        s.append(sp(n+i,'rect', x2, y2, 80000+i*5000, 40000, c, 70000, rot=rot))
-    n+=len(confetti)
-    # Celebration stars
-    for i,(x2,y2,sz,c,pts) in enumerate([
-        (I//2,    I//2,    I//2, 'FFD700', 5),
-        (W-I//2,  I//2,    I//2, 'FFD700', 5),
-        (I//2,    H-I//2,  I//2, 'FF6D00', 4),
-        (W-I//2,  H-I//2,  I//2, 'FF6D00', 4),
-        (CX,      I//3,    I,    'FFD700', 6),
-        (W//4,    H//4,    I//2, '00BCD4', 5),
-        (W*3//4,  H//4,    I//2, '00E676', 5),
-        (W//4,    H*3//4,  I//3, 'FF1744', 4),
-        (W*3//4,  H*3//4,  I//3, '9C27B0', 4),
-    ]):
-        s.append(star(n+i, x2, y2, sz, c, 35000, pts))
-    n+=9
-    # Atmosphere orbs
-    s+=[ orb(n,   CX,     CY,   6*I, 'FFD700', 5000),
-         orb(n+1, I//2,   I//2, 3*I, 'FF6D00', 6000),
-         orb(n+2, W-I//2, I//2, 3*I, '00BCD4', 6000),
-         orb(n+3, CX,     H,    4*I, '9C27B0', 5000)]
-    n+=4
-    # Hex rings
-    s+=[ hex_ring(n,   CX-I, CY,  4*I, 'FFD700', 12000, glow_rad=300000),
-         hex_ring(n+1, I,    I,   2*I, 'FF6D00', 10000),
-         hex_ring(n+2, W-I,  H-I, 2*I, '00BCD4', 10000)]
-    n+=3
-    # Slash lines
-    s+=[ slash(n,   CX, I,   8*I, 'FFD700', 10000, 15),
-         slash(n+1, CX, H-I, 8*I, 'FFD700', 10000,-15)]
+    # Confetti — plain colored rects, no rotation
+    confetti_data=[('FF6D00',I,I//2),('00BCD4',2*I,I//3),('FFD700',3*I,I//4),('FF1744',4*I,I//2),('00E676',5*I,I//3),('9C27B0',6*I,I//4),('FF6D00',7*I,I//2),('00BCD4',8*I,I//3),('FFD700',I//2,H//3),('FF1744',I//4,2*I),('00E676',W-I//2,H//3),('9C27B0',W-I//4,2*I),('FF6D00',2*I,H*3//4),('FFD700',4*I,H*3//4),('00BCD4',6*I,H*3//4),('FF1744',8*I,H*3//4),('00E676',I//2,H-I//3),('9C27B0',W-I//2,H-I//3),('FF6D00',3*I,H-I//4),('00BCD4',7*I,H-I//4)]
+    for i,(c,x2,y2) in enumerate(confetti_data):
+        s.append(bar(n+i,x2,y2,90000+i*4000,45000,c,70000)); n+=1
+    # Celebration diamonds
+    for i,(x2,y2,sz,c) in enumerate([(I//2,I//2,I//2,'FFD700'),(W-I//2,I//2,I//2,'FFD700'),(I//2,H-I//2,I//2,'FF6D00'),(W-I//2,H-I//2,I//2,'FF6D00'),(CX,I//3,I,'FFD700'),(W//4,H//4,I//2,'00BCD4'),(W*3//4,H//4,I//2,'00E676'),(W//4,H*3//4,I//3,'FF1744'),(W*3//4,H*3//4,I//3,'9C27B0')]):
+        s.append(dmd(n+i,x2,y2,sz,c,35000)); n+=1
+    s+=[orb(n,CX,CY,6*I,'FFD700',5000),orb(n+1,I//2,I//2,3*I,'FF6D00',6000),orb(n+2,W-I//2,I//2,3*I,'00BCD4',6000),orb(n+3,CX,H,4*I,'9C27B0',5000)]; n+=4
+    for i,sz in enumerate([7*I,5*I,3*I]):
+        s.append(ring(n+i,CX,CY-I//2,sz,'FFD700',4000+i*3000,lw=18000)); n+=1
     n+=2
+    s+=[bar(n,0,0,W,I//4,'FFD700',15000),bar(n+1,0,H-I//4,W,I//4,'FFD700',15000)]; n+=2
     return ''.join(s)
 
 DECOR_FN = {

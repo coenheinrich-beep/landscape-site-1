@@ -62,7 +62,7 @@ SLIDE_COLORS = {
 TRANSITIONS = {
     1:('<p:zoom dir="in"/>','med'),   2:('<p:push dir="u"/>','fast'),
     3:('<p:wipe dir="l"/>','med'),    4:('<p:wheel spokes="4"/>','fast'),
-    5:('<p:split dir="horz" orient="out"/>','med'), 6:('<p:blinds dir="vert"/>','fast'),
+    5:('<p:split orient="horz" dir="out"/>','med'), 6:('<p:blinds dir="vert"/>','fast'),
     7:('<p:newsflash/>','fast'),      8:('<p:circle/>','med'),
     9:('<p:zoom dir="out"/>','slow'),
 }
@@ -179,17 +179,11 @@ for n in range(1, 10):
     p.write_text(xml, encoding='utf-8')
     print(f'slide{n}: {len(shape_ids)} shapes')
 
+import subprocess
 OUT.unlink(missing_ok=True)
-all_files = []
-for root, dirs, files in os.walk(WORK):
-    dirs.sort()
-    for f in sorted(files):
-        full = Path(root) / f
-        arc = full.relative_to(WORK).as_posix()
-        all_files.append((arc, full))
-def key(p): return (0,p[0]) if p[0]=='[Content_Types].xml' else (1,p[0]) if p[0]=='_rels/.rels' else (2,p[0])
-all_files.sort(key=key)
-with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as zout:
-    for arc, full in all_files:
-        zout.write(full, arc)
+# Use system `zip -X` (strips Unix extra attributes/timestamps that Python's
+# zipfile module stamps in) matching the pptx skill's documented packaging
+# approach, instead of Python zipfile — to rule out OPC-package-level issues.
+subprocess.run(['zip', '-X', '-D', str(OUT.resolve()), '[Content_Types].xml'], cwd=WORK, check=True, capture_output=True)
+subprocess.run(['zip', '-X', '-D', '-r', str(OUT.resolve()), '.', '-x', '[Content_Types].xml'], cwd=WORK, check=True, capture_output=True)
 print('Done:', OUT.stat().st_size // 1024, 'KB')

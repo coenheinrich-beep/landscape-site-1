@@ -31,11 +31,11 @@ def sp(id, preset, x, y, cx, cy, color, alpha, outline=False, lw=25400):
             f'</a:xfrm><a:prstGeom prst="{preset}"><a:avLst/></a:prstGeom>'
             f'{f_xml}{l_xml}</p:spPr></p:sp>')
 
-def orb(id, x, y, sz, c, a):  return sp(id,'ellipse',x-sz//2,y-sz//2,sz,sz,c,a)
-def ring(id, x, y, sz, c, a, lw=25400): return sp(id,'ellipse',x-sz//2,y-sz//2,sz,sz,c,a,outline=True,lw=lw)
+def orb(id, x, y, sz, c, a):  return sp(id,'ellipse',max(0,x-sz//2),max(0,y-sz//2),sz,sz,c,a)
+def ring(id, x, y, sz, c, a, lw=25400): return sp(id,'ellipse',max(0,x-sz//2),max(0,y-sz//2),sz,sz,c,a,outline=True,lw=lw)
 def bar(id, x, y, w2, h2, c, a): return sp(id,'rect',x,y,w2,h2,c,a)
-def dmd(id, x, y, sz, c, a):  return sp(id,'diamond',x-sz//2,y-sz//2,sz,sz,c,a)
-def dot(id, x, y, sz, c, a):  return sp(id,'ellipse',x-sz//2,y-sz//2,sz,sz,c,a)
+def dmd(id, x, y, sz, c, a):  return sp(id,'diamond',max(0,x-sz//2),max(0,y-sz//2),sz,sz,c,a)
+def dot(id, x, y, sz, c, a):  return sp(id,'ellipse',max(0,x-sz//2),max(0,y-sz//2),sz,sz,c,a)
 
 # Each slide gets ~14 unique decorative shapes (matching rl_test_anims shape count)
 def make_decor(slide, c1, c2, c3):

@@ -172,9 +172,10 @@ for n in range(1, 10):
     xml = xml.replace('</p:grpSpPr>', f'</p:grpSpPr>{decor(n, c1, c2, c3)}', 1)
     shape_ids = get_shape_ids(xml)
     t_inner, spd = TRANSITIONS[n]
-    f1, f2, dstep, sdelay, adur = ANIM_CFG[n]
-    timing = make_timing(shape_ids, f1, f2, dstep, sdelay, adur)
-    xml = xml.replace('</p:sld>', f'<p:transition spd="{spd}">{t_inner}</p:transition>{timing}</p:sld>')
+    # NOTE: per-shape entrance animations (p:timing/p:bldLst) removed —
+    # they were the most complex hand-built XML and the likeliest source
+    # of the "needs repair" error on iOS. Slide transitions + decorations only.
+    xml = xml.replace('</p:sld>', f'<p:transition spd="{spd}">{t_inner}</p:transition></p:sld>')
     p.write_text(xml, encoding='utf-8')
     print(f'slide{n}: {len(shape_ids)} shapes')
 

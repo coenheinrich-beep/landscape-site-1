@@ -74,7 +74,7 @@ def make_decor(slide, c1, c2, c3):
         s += [ring(n,W//4,CY,5000000,c1,3000,lw=15000), ring(n+1,W*3//4,CY,5000000,c2,3000,lw=15000)]; n+=2
         s += [orb(n,0,CY,4000000,c1,4000), orb(n+1,W,CY,4000000,c2,4000)]; n+=2
         for i in range(5):
-            s.append(dot(n+i,CX,500000+i*1000000,80000,'FFFFFF',8000)); n+=1
+            s.append(dot(n,CX,500000+i*1000000,80000,'FFFFFF',8000)); n+=1
         s += [bar(n,0,0,W,50000,c3,10000), bar(n+1,0,H-50000,W,50000,c3,10000)]; n+=2
         s += [dmd(n,300000,300000,300000,c1,20000), dmd(n+1,W-300000,H-300000,300000,c2,20000)]; n+=2
     elif slide == 6:  # 5 Stages — 5 column rings

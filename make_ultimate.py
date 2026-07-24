@@ -688,8 +688,30 @@ for n in range(1, 10):
     print(f'Slide {n}: {shape_count} total shapes | {t_xml[:22]} | {f1}')
 
 # ── REPACK ────────────────────────────────────────────────────────────────────
+# OOXML requires [Content_Types].xml first, then _rels/.rels, then everything
+# else. `zip -r` uses filesystem order which puts them in the middle — that
+# breaks PowerPoint's package reader. Use Python zipfile for correct ordering.
 OUT.unlink(missing_ok=True)
-res = subprocess.run(['zip','-Xr',str(OUT.resolve()),'.'], cwd=str(WORK),
-                     capture_output=True, text=True)
-print(f'\nRepack: {res.returncode}')
+import os
+all_files = []
+for root, dirs, files in os.walk(WORK):
+    dirs.sort()
+    for fname in sorted(files):
+        full = Path(root) / fname
+        arc  = full.relative_to(WORK).as_posix()
+        all_files.append((arc, full))
+
+def _sort_key(pair):
+    arc = pair[0]
+    if arc == '[Content_Types].xml': return (0, arc)
+    if arc == '_rels/.rels':         return (1, arc)
+    return (2, arc)
+
+all_files.sort(key=_sort_key)
+
+with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as zout:
+    for arc, full in all_files:
+        zout.write(full, arc)
+
+print(f'\nRepack: OK')
 print(f'Output: {OUT}  ({OUT.stat().st_size//1024} KB)')

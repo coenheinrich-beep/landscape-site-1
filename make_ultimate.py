@@ -555,22 +555,21 @@ AUDIO_SID = 499
 AUDIO_RID = 'rId99'
 
 audio_pic_xml = (
-    f'<p:pic><p:nvPicPr>'
+    f'<p:sp><p:nvSpPr>'
     f'<p:cNvPr id="{AUDIO_SID}" name="bg_audio">'
     f'<a:hlinkClick r:id="{AUDIO_RID}" action="ppaction://media"/>'
     f'</p:cNvPr>'
-    f'<p:cNvPicPr><a:picLocks noRot="1" noChangeAspect="1" noMove="1"'
-    f' noResize="1" noSelect="1" noCrop="1" noGrp="1"/></p:cNvPicPr>'
+    f'<p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr>'
     f'<p:nvPr><p:cNvMediaPr>'
     f'<a:audioFile r:link="{AUDIO_RID}"/>'
     f'</p:cNvMediaPr></p:nvPr>'
-    f'</p:nvPicPr>'
-    f'<p:blipFill><a:blip r:embed="{AUDIO_RID}"/>'
-    f'<a:stretch><a:fillRect/></a:stretch></p:blipFill>'
+    f'</p:nvSpPr>'
     f'<p:spPr>'
     f'<a:xfrm><a:off x="-914400" y="-914400"/><a:ext cx="457200" cy="457200"/></a:xfrm>'
     f'<a:prstGeom prst="rect"><a:avLst/></a:prstGeom>'
-    f'</p:spPr></p:pic>'
+    f'<a:solidFill><a:srgbClr val="000000"><a:alpha val="0"/></a:srgbClr></a:solidFill>'
+    f'<a:ln><a:noFill/></a:ln>'
+    f'</p:spPr></p:sp>'
 )
 
 audio_timing_xml = (

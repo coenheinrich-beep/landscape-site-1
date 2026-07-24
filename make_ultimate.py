@@ -660,26 +660,14 @@ for n in range(1, 10):
     decor = DECOR_FN[n]()
     xml = xml.replace('</p:grpSpPr>', f'</p:grpSpPr>{decor}', 1)
 
-    # 2. On slide 1: inject hidden audio shape + audio relationship
-    if n == 1:
-        xml = xml.replace('</p:spTree>', f'{audio_pic_xml}</p:spTree>', 1)
-        rels_path = WORK / 'ppt/slides/_rels/slide1.xml.rels'
-        rels = rels_path.read_text(encoding='utf-8')
-        AUDIO_TYPE = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships/audio'
-        if AUDIO_RID not in rels:
-            rels = rels.replace('</Relationships>',
-                f'<Relationship Id="{AUDIO_RID}" Type="{AUDIO_TYPE}" Target="../media/audio1.wav"/></Relationships>')
-            rels_path.write_text(rels, encoding='utf-8')
-
-    # 3. Transitions
+    # 2. Transitions
     t_xml, t_spd = TRANSITIONS[n]
     trans = f'<p:transition spd="{t_spd}">{t_xml}</p:transition>'
 
-    # 4. Animations
+    # 3. Animations (no audio)
     shape_ids = get_shape_ids(xml)
     f1, f2, dstep, sdelay, adur = ANIM_CFG[n]
-    audio_snip = audio_timing_xml if n == 1 else None
-    timing = make_timing(shape_ids, f1, f2, dstep, sdelay, adur, audio_snip)
+    timing = make_timing(shape_ids, f1, f2, dstep, sdelay, adur)
 
     xml = xml.replace('</p:sld>', f'{trans}{timing}</p:sld>')
     sp_path.write_text(xml, encoding='utf-8')
